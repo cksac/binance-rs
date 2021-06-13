@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Clone)]
-pub struct Empty { }
+pub struct Empty {}
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -223,10 +223,7 @@ pub struct Bids {
 
 impl Bids {
     pub fn new(price: f64, qty: f64) -> Bids {
-        Bids { 
-            price, 
-            qty,
-        }
+        Bids { price, qty }
     }
 }
 
@@ -772,6 +769,21 @@ pub struct DepthOrderBookEvent {
     pub asks: Vec<Asks>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HistoricalTrade {
+    pub id: u64,
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub qty: f64,
+    #[serde(with = "string_or_float")]
+    pub quote_qty: f64,
+    pub time: u64,
+    pub is_buyer_marker: bool,
+    pub is_best_match: bool,
+}
+
 pub(crate) mod string_or_float {
     use std::fmt;
 
@@ -815,7 +827,7 @@ pub(crate) mod string_or_float_opt {
     {
         match value {
             Some(v) => crate::model::string_or_float::serialize(v, serializer),
-            None => serializer.serialize_none()
+            None => serializer.serialize_none(),
         }
     }
 
@@ -830,7 +842,9 @@ pub(crate) mod string_or_float_opt {
             Float(f64),
         }
 
-        Ok(Some(crate::model::string_or_float::deserialize(deserializer)?))
+        Ok(Some(crate::model::string_or_float::deserialize(
+            deserializer,
+        )?))
     }
 }
 
@@ -840,16 +854,16 @@ pub(crate) mod string_or_bool {
     use serde::{de, Serializer, Deserialize, Deserializer};
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            T: fmt::Display,
-            S: Serializer,
+    where
+        T: fmt::Display,
+        S: Serializer,
     {
         serializer.collect_str(value)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<bool, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
